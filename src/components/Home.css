@@ -1,0 +1,78 @@
+﻿.list-horizontal-display > div {
+  display: inline-block;
+}
+
+#refreshdiv{
+  padding-left: 30px;
+  padding-top: 10px;  
+}
+
+#buttonRefresh{
+  float: right;
+}
+
+.graphListItemdiv{
+  padding-left: 40px;
+}
+.graphList {
+  list-style-type: none;
+  padding: 5px;
+  overflow: hidden;
+  background-color: #f2f2f2;
+  margin-right: 18px;
+}
+
+.graphListItem {
+  float: left;
+}
+
+.graphListItem a {
+  display: block;
+  color: white;
+  text-align: center;
+  padding: 3px;
+  text-decoration: none;
+}
+
+.graphListItem a:hover {
+  background-color: #111111;
+}
+.chartTitle{
+  padding-left: 60px;
+}
+
+.button {
+  border: none;
+  color: white;
+  padding: 12px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  margin:0px;
+}
+
+.buttonGreen {
+  border-radius: 50%;
+  background-color: #66ff66;
+}
+.buttonRed {
+  border-radius: 50%;
+  background-color: #ff5566;
+}
+.buttonGray {
+  border-radius: 50%;
+  background-color: #d9d9d9;
+}
+
+
+.legendSpan{
+  display: inline-block;
+  position: absolute;
+  margin-top: 5px;
+  margin-left: 2px;
+}
+
+.title{
+  position: relative;
+  text-align: center;
+}
