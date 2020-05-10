@@ -76,3 +76,9 @@
   position: relative;
   text-align: center;
 }
+
+.chartDiv{
+  width: 84vw;
+    overflow-x: auto;
+    padding-right: 15px;
+}

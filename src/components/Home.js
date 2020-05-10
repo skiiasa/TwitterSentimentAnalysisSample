@@ -1,4 +1,13 @@
-import React, { Component } from "react";
+import React, { Component, PureComponent } from "react";
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 import { ComplexDonut } from "./complex";
 import { Donut } from "./donut";
 import "./Home.css";
@@ -27,6 +36,11 @@ export class Home extends Component {
       positive: 0,
       neutral: 0,
       negative: 0,
+      chartData: [],
+      chartData1: [],
+      chartData2: [],
+      chartData3: [],
+      chartData4: [],
     };
     this.LoadChartData = this.LoadChartData.bind(this);
     this.handleErrors = this.handleErrors.bind(this);
@@ -43,7 +57,7 @@ export class Home extends Component {
         new Date(new Date().setDate(new Date().getDate() - 1))
       );
       var baseUrl =
-      "https://azureblobsastest1.blob.core.windows.net/sentimentoutput/";
+        "https://azureblobsastest1.blob.core.windows.net/sentimentoutput/";
       var d1url = baseUrl + d1date + "/File.txt";
       fetch(d1url)
         .then((res) => res.text())
@@ -53,38 +67,20 @@ export class Home extends Component {
         });
     }
     return response;
-}
-  
+  }
 
   LoadChartData() {
-    // console.log("LoadChartData");    
+    // console.log("LoadChartData");
     var baseUrl =
       "https://azureblobsastest1.blob.core.windows.net/sentimentoutput/";
     var url = baseUrl + ParseDate(new Date()) + "/File.txt";
-    fetch(url).then(this.handleErrors)
+    fetch(url)
+      .then(this.handleErrors)
       .then((res) => res.text())
-      .then(
-        (result) => {
-          // console.log("todays",result);
-          this.LoadTodaysValues(result);
-        }
-      );
-
-    // fetch(baseUrl+"0_856259411cb3480ebaab4d1f8c6ea1ec_1.json")
-    //   .then((res) => res.text())
-    //   .then(
-    //     (result) => {
-    //       var donutDataItems;
-    //       ({ donutDataItems } = ParseResponse(result));
-    //       this.setState({
-    //         aggregateLoaded: true,
-    //         totalAggregate: donutDataItems,
-    //       });
-    //     },
-    //     (error) => {
-    //       console.log("error", error);
-    //     }
-    //   );
+      .then((result) => {
+        // console.log("todays",result);
+        this.LoadTodaysValues(result);
+      });    
     var d1date = ParseDate(
       new Date(new Date().setDate(new Date().getDate() - 1))
     );
@@ -189,42 +185,52 @@ export class Home extends Component {
   LoadD3Data(result) {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
+    var chartData;
+    ({chartData} = ParseResponseForGraph(result));
     this.setState({
       aggregateLoaded: true,
       d3Loaded: true,
       dm3Aggregate: donutDataItems,
+      chartData3:chartData,
     });
   }
 
   LoadD4Data(result) {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
+    var chartData;
+    ({chartData} = ParseResponseForGraph(result));
     this.setState({
-      aggregateLoaded: true,
       d4Loaded: true,
       dm4Aggregate: donutDataItems,
+      chartData4:chartData
     });
   }
 
   LoadD2Data(result) {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
+    var chartData;
+    ({chartData} = ParseResponseForGraph(result));
     // console.log("april12-result",result)
     console.log("april12", donutDataItems);
     this.setState({
-      aggregateLoaded: true,
       d2Loaded: true,
       dm2Aggregate: donutDataItems,
+      chartData2:chartData,
     });
   }
 
   LoadD1Data(result) {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
+    var chartData;
+    ({chartData} = ParseResponseForGraph(result));
     //  console.log("april13",donutDataItems)
     this.setState({
       d1Loaded: true,
       dm1Aggregate: donutDataItems,
+      chartData1:chartData
     });
   }
 
@@ -238,14 +244,10 @@ export class Home extends Component {
           var negativeItems;
           var neutralItems;
           var donutDataItems;
-          ({
-            data,
-            positiveItems,
-            negativeItems,
-            neutralItems,
-            donutDataItems,
-            result,
-          } = ParseResponse(result));
+          ({data, positiveItems,negativeItems,neutralItems, donutDataItems,} = ParseResponse(result));
+          var chartData;
+          ({chartData}=ParseResponseForGraph(result));
+          console.log(chartData);
           var total = Sum(data);
           var positive = Sum(positiveItems) / total;
           var negative = Sum(negativeItems) / total;
@@ -257,6 +259,7 @@ export class Home extends Component {
             positive: Math.round(positive * 100),
             negative: Math.round(negative * 100),
             neutral: Math.round(neutral * 100),
+            chartData: chartData,
           });
         },
         // Note: it's important to handle errors here
@@ -281,12 +284,27 @@ export class Home extends Component {
         <ul className="graphList">
           <li className="graphListItem">
             <ul className="graphList">
-              <li><div><button class="button buttonGreen"></button><span className="legendSpan">Positive</span></div></li>
-              <li><div><button class="button buttonGray"></button><span className="legendSpan">Neutral</span></div></li>
-              <li><div><button class="button buttonRed"></button><span className="legendSpan">Negative</span></div></li>
-             </ul>
+              <li>
+                <div>
+                  <button className="button buttonGreen"></button>
+                  <span className="legendSpan">Positive</span>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <button className="button buttonGray"></button>
+                  <span className="legendSpan">Neutral</span>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <button className="button buttonRed"></button>
+                  <span className="legendSpan">Negative</span>
+                </div>
+              </li>
+            </ul>
           </li>
-          <li className="graphListItem">           
+          <li className="graphListItem">
             <div className="graphListItemdiv">
               <span className="chartTitle">Aggregate</span>
               <ComplexDonut
@@ -317,15 +335,30 @@ export class Home extends Component {
               <Donut progress={this.state.negative} onRender={renderProgress} />
             </div>
           </li>
-        </ul>
-        <h5>Summary Status</h5>
+        </ul>        
+        <h5>Summary Status</h5>       
         <ul className="graphList">
-        <li className="graphListItem">
+          <li className="graphListItem">
             <ul className="graphList">
-              <li><div><button class="button buttonGreen"></button><span className="legendSpan">Positive</span></div></li>
-              <li><div><button class="button buttonGray"></button><span className="legendSpan">Neutral</span></div></li>
-              <li><div><button class="button buttonRed"></button><span className="legendSpan">Negative</span></div></li>
-             </ul>
+              <li>
+                <div>
+                  <button className="button buttonGreen"></button>
+                  <span className="legendSpan">Positive</span>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <button className="button buttonGray"></button>
+                  <span className="legendSpan">Neutral</span>
+                </div>
+              </li>
+              <li>
+                <div>
+                  <button className="button buttonRed"></button>
+                  <span className="legendSpan">Negative</span>
+                </div>
+              </li>
+            </ul>
           </li>
           <li className="graphListItem">
             <div className="graphListItemdiv">
@@ -396,17 +429,34 @@ export class Home extends Component {
             </div>
           </li>
         </ul>
+        <h5>Trend Details</h5>
+        <ul className="graphList">
+          <li className="graphListItem">
+            <div className="chartDiv">
+              <LineChart  width={1050}
+                height={300}
+                data={this.GetLineChartData()}
+                margin={{ top: 10, right: 5, left: 0, bottom: 5 }}
+              >
+                <XAxis dataKey="Time" />
+                <YAxis />
+                <CartesianGrid strokeDasharray="5 5" />
+                <Tooltip />
+                <Legend />
+                <Line  type="monotone"  dataKey="Negative" stroke={RED_COLOR} activeDot={{ r: 5 }} dot={{ r: 2 }}   />
+                <Line type="monotone" dataKey="Positive" stroke={GREEN_COLOR} activeDot={{ r: 5 }}  dot={{ r: 2 }} />
+                <Line type="monotone" dataKey="Neutral" stroke="#A9A9A9" activeDot={{ r: 5 }}  dot={{ r: 2 }} />
+              </LineChart>
+            </div>
+          </li>
+        </ul>
       </div>
     );
 
     return (
       <div>
-        <h3 className="title">
-          Lifting COVID19 Restrictions
-        </h3>
-        <h5 className="title">
-          Real time sentiments from twitter
-        </h5>
+        <h3 className="title">Lifting COVID19 Restrictions</h3>
+        <h5 className="title">Real time sentiments from twitter</h5>
         <div id="donutdiv">
           {this.state.todayLoaded &&
           this.state.d1Loaded &&
@@ -464,6 +514,12 @@ export class Home extends Component {
       </div>
     );
   }
+
+  GetLineChartData() {
+    var baseData = [...this.state.chartData4];
+    var result = baseData.concat(this.state.chartData3).concat(this.state.chartData2).concat(this.state.chartData1).concat(this.state.chartData)
+    return result;
+  }
 }
 function ParseDate(d) {
   var curr_date = d.getDate();
@@ -489,6 +545,38 @@ function Sum(data) {
     total += data[i].ScoreCounts;
   }
   return total;
+}
+function onlyUnique(value, index, self) { 
+  return self.indexOf(value) === index;
+}
+
+function ParseResponseForGraph(result) {
+  if (result.endsWith("]") === false) {
+    result = result + "]";
+  }
+  var data = JSON.parse(result);
+
+  const timeArray = data.map(ele=>ele.Time).filter( onlyUnique );
+ 
+  var chartData =[];
+
+  timeArray.forEach(time => {
+
+    var pi =  data.filter((item) => time == item.Time && item.SentimentScore === 4);
+    var ni =  data.filter((item) => time == item.Time && item.SentimentScore === 0);
+    var gi =  data.filter((item) => time == item.Time && item.SentimentScore === 2);
+    
+    chartData.push(
+      {
+        Time:time.slice(0, -12),
+        Positive:pi[0].ScoreCounts,
+        Negative:ni[0].ScoreCounts,
+        Neutral:gi[0].ScoreCounts,
+      }
+    );
+  });  
+
+  return{chartData};
 }
 
 function ParseResponse(result) {
