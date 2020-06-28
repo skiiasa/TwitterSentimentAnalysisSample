@@ -10,7 +10,10 @@ import {
 } from "recharts";
 import { ComplexDonut } from "./complex";
 import { Donut } from "./donut";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 import "./Home.css";
+import { Button } from "reactstrap";
 
 const RED_COLOR = "#ff5566";
 const GREEN_COLOR = "#66ff66";
@@ -41,9 +44,16 @@ export class Home extends Component {
       chartData2: [],
       chartData3: [],
       chartData4: [],
+      startDate: new Date(new Date().setDate(this.GetDate().getDate() - 4)),
+      userSelectedChartData: [],
     };
     this.LoadChartData = this.LoadChartData.bind(this);
     this.handleErrors = this.handleErrors.bind(this);
+  }
+
+  GetDate() {
+    //console.log("date",new Date(2020,5,1,0,0,0));
+    return new Date(2020,5,1,0,0,0);
   }
 
   componentDidMount() {
@@ -54,7 +64,7 @@ export class Home extends Component {
     if (!response.ok) {
       //console.log("error123", response);
       var d1date = ParseDate(
-        new Date(new Date().setDate(new Date().getDate() - 1))
+        new Date(new Date().setDate(this.GetDate().getDate() - 1))
       );
       var baseUrl =
         "https://azureblobsastest1.blob.core.windows.net/sentimentoutput/";
@@ -73,16 +83,17 @@ export class Home extends Component {
     // console.log("LoadChartData");
     var baseUrl =
       "https://azureblobsastest1.blob.core.windows.net/sentimentoutput/";
-    var url = baseUrl + ParseDate(new Date()) + "/File.txt";
+    var url = baseUrl + ParseDate(this.GetDate()) + "/File.txt";
+    console.log("error",url);
     fetch(url)
       .then(this.handleErrors)
       .then((res) => res.text())
       .then((result) => {
         // console.log("todays",result);
         this.LoadTodaysValues(result);
-      });    
+      });
     var d1date = ParseDate(
-      new Date(new Date().setDate(new Date().getDate() - 1))
+      new Date(new Date().setDate(this.GetDate().getDate() - 1))
     );
     var d1url = baseUrl + d1date + "/File.txt";
     // console.log(d1url);
@@ -107,7 +118,7 @@ export class Home extends Component {
       );
 
     var d2date = ParseDate(
-      new Date(new Date().setDate(new Date().getDate() - 2))
+      new Date(new Date().setDate(this.GetDate().getDate() - 2))
     );
     var d2url = baseUrl + d2date + "/File.txt";
     console.log("d2url", d2url);
@@ -132,7 +143,7 @@ export class Home extends Component {
       );
 
     var d3date = ParseDate(
-      new Date(new Date().setDate(new Date().getDate() - 3))
+      new Date(new Date().setDate(this.GetDate().getDate() - 3))
     );
     var d3url = baseUrl + d3date + "/File.txt";
     // console.log(d3url);
@@ -157,7 +168,7 @@ export class Home extends Component {
       );
 
     var d4date = ParseDate(
-      new Date(new Date().setDate(new Date().getDate() - 4))
+      new Date(new Date().setDate(this.GetDate().getDate() - 4))
     );
     var d4url = baseUrl + d4date + "/File.txt";
     // console.log(d3url);
@@ -186,12 +197,12 @@ export class Home extends Component {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
     var chartData;
-    ({chartData} = ParseResponseForGraph(result));
+    ({ chartData } = ParseResponseForGraph(result));
     this.setState({
       aggregateLoaded: true,
       d3Loaded: true,
       dm3Aggregate: donutDataItems,
-      chartData3:chartData,
+      chartData3: chartData,
     });
   }
 
@@ -199,11 +210,13 @@ export class Home extends Component {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
     var chartData;
-    ({chartData} = ParseResponseForGraph(result));
+    ({ chartData } = ParseResponseForGraph(result));
+    console.log("chartData",chartData);
+    console.log("donutDataItems",donutDataItems);
     this.setState({
       d4Loaded: true,
       dm4Aggregate: donutDataItems,
-      chartData4:chartData
+      chartData4: chartData,
     });
   }
 
@@ -211,13 +224,13 @@ export class Home extends Component {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
     var chartData;
-    ({chartData} = ParseResponseForGraph(result));
+    ({ chartData } = ParseResponseForGraph(result));
     // console.log("april12-result",result)
     console.log("april12", donutDataItems);
     this.setState({
       d2Loaded: true,
       dm2Aggregate: donutDataItems,
-      chartData2:chartData,
+      chartData2: chartData,
     });
   }
 
@@ -225,12 +238,12 @@ export class Home extends Component {
     var donutDataItems;
     ({ donutDataItems } = ParseResponse(result));
     var chartData;
-    ({chartData} = ParseResponseForGraph(result));
+    ({ chartData } = ParseResponseForGraph(result));
     //  console.log("april13",donutDataItems)
     this.setState({
       d1Loaded: true,
       dm1Aggregate: donutDataItems,
-      chartData1:chartData
+      chartData1: chartData,
     });
   }
 
@@ -244,9 +257,15 @@ export class Home extends Component {
           var negativeItems;
           var neutralItems;
           var donutDataItems;
-          ({data, positiveItems,negativeItems,neutralItems, donutDataItems,} = ParseResponse(result));
+          ({
+            data,
+            positiveItems,
+            negativeItems,
+            neutralItems,
+            donutDataItems,
+          } = ParseResponse(result));
           var chartData;
-          ({chartData}=ParseResponseForGraph(result));
+          ({ chartData } = ParseResponseForGraph(result));
           console.log(chartData);
           var total = Sum(data);
           var positive = Sum(positiveItems) / total;
@@ -271,6 +290,65 @@ export class Home extends Component {
       );
   }
 
+  handleDateChange = (date) => {
+    this.setState({
+      startDate: date,
+      userSelectedChartData: [],
+    });
+
+    var startDate = date;
+    var todaysDate = this.GetDate();
+    console.log("todaysDate",todaysDate)
+    while (startDate.getDate() !== todaysDate.getDate()) {
+      this.GetLineData(startDate);
+      console.log("startDate",startDate)
+      startDate = new Date(startDate.getTime() + (60*60*24*1000));
+    }
+    this.GetLineData(todaysDate);
+  };
+
+  Compare(a,b){
+    const bandA = a.Time;
+    const bandB = b.Time;
+  
+    let comparison = 0;
+    if (bandA > bandB) {
+      comparison = 1;
+    } else if (bandA < bandB) {
+      comparison = -1;
+    }
+    return comparison;
+  }
+
+  GetLineData(date) {
+
+    console.log("newResult-date",date);
+    var baseUrl =
+      "https://azureblobsastest1.blob.core.windows.net/sentimentoutput/";
+    var url = baseUrl + ParseDate(date) + "/File.txt";
+    console.log("newResult-url",url);
+    fetch(url)
+      .then(this.handleErrors)
+      .then((res) => res.text())
+      .then((result) => {
+        fetch(result)
+          .then((res) => res.text())
+          .then((result) => {
+            var baseData = [...this.state.userSelectedChartData];
+            var chartData;
+            ({ chartData } = ParseResponseForGraph(result));
+            var newResult = baseData.concat(chartData).sort(this.Compare);
+            console.log("newResult",newResult);
+            this.setState({
+              userSelectedChartData: newResult,
+            });
+            
+          });
+      });
+  }
+
+  
+
   render() {
     function refreshPage() {
       window.location.reload(false);
@@ -280,7 +358,9 @@ export class Home extends Component {
 
     const GetCharts = (
       <div>
-        <h5>Todays Status</h5>
+        <h5>{`${new Date(
+                  new Date().setDate(this.GetDate().getDate())
+                )}`.substr(4, 11)}</h5>
         <ul className="graphList">
           <li className="graphListItem">
             <ul className="graphList">
@@ -335,8 +415,8 @@ export class Home extends Component {
               <Donut progress={this.state.negative} onRender={renderProgress} />
             </div>
           </li>
-        </ul>        
-        <h5>Summary Status</h5>       
+        </ul>
+        <h5>Summary Status</h5>
         <ul className="graphList">
           <li className="graphListItem">
             <ul className="graphList">
@@ -364,7 +444,7 @@ export class Home extends Component {
             <div className="graphListItemdiv">
               <span className="chartTitle">
                 {`${new Date(
-                  new Date().setDate(new Date().getDate() - 1)
+                  new Date().setDate(this.GetDate().getDate() - 1)
                 )}`.substr(4, 11)}
               </span>
               <ComplexDonut
@@ -381,7 +461,7 @@ export class Home extends Component {
             <div className="graphListItemdiv">
               <span className="chartTitle">
                 {`${new Date(
-                  new Date().setDate(new Date().getDate() - 2)
+                  new Date().setDate(this.GetDate().getDate() - 2)
                 )}`.substr(4, 11)}
               </span>
               <ComplexDonut
@@ -398,7 +478,7 @@ export class Home extends Component {
             <div className="graphListItemdiv">
               <span className="chartTitle">
                 {`${new Date(
-                  new Date().setDate(new Date().getDate() - 3)
+                  new Date().setDate(this.GetDate().getDate() - 3)
                 )}`.substr(4, 11)}
               </span>
               <ComplexDonut
@@ -415,7 +495,7 @@ export class Home extends Component {
             <div className="graphListItemdiv">
               <span className="chartTitle">
                 {`${new Date(
-                  new Date().setDate(new Date().getDate() - 4)
+                  new Date().setDate(this.GetDate().getDate() - 4)
                 )}`.substr(4, 11)}
               </span>
               <ComplexDonut
@@ -433,9 +513,19 @@ export class Home extends Component {
         <ul className="graphList">
           <li className="graphListItem">
             <div className="chartDiv">
-              <LineChart  width={1050}
+              <div>
+                <span>Select start date</span>
+                <DatePicker className="dateTimePicker"
+                  selected={this.state.startDate}
+                  minDate={new Date(2020, 3, 18)}
+                  onChange={this.handleDateChange}
+                  maxDate = {this.GetDate()}
+                />
+              </div>
+              <LineChart
+                width={1050}
                 height={300}
-                data={this.GetLineChartData()}
+                data={this.state.userSelectedChartData.length==0 ? this.GetLineChartData():this.state.userSelectedChartData}
                 margin={{ top: 10, right: 5, left: 0, bottom: 5 }}
               >
                 <XAxis dataKey="Time" />
@@ -443,9 +533,27 @@ export class Home extends Component {
                 <CartesianGrid strokeDasharray="5 5" />
                 <Tooltip />
                 <Legend />
-                <Line  type="monotone"  dataKey="Negative" stroke={RED_COLOR} activeDot={{ r: 5 }} dot={{ r: 2 }}   />
-                <Line type="monotone" dataKey="Positive" stroke={GREEN_COLOR} activeDot={{ r: 5 }}  dot={{ r: 2 }} />
-                <Line type="monotone" dataKey="Neutral" stroke="#A9A9A9" activeDot={{ r: 5 }}  dot={{ r: 2 }} />
+                <Line
+                  type="monotone"
+                  dataKey="Negative"
+                  stroke={RED_COLOR}
+                  activeDot={{ r: 5 }}
+                  dot={{ r: 2 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Positive"
+                  stroke={GREEN_COLOR}
+                  activeDot={{ r: 5 }}
+                  dot={{ r: 2 }}
+                />
+                <Line
+                  type="monotone"
+                  dataKey="Neutral"
+                  stroke="#A9A9A9"
+                  activeDot={{ r: 5 }}
+                  dot={{ r: 2 }}
+                />
               </LineChart>
             </div>
           </li>
@@ -517,21 +625,26 @@ export class Home extends Component {
 
   GetLineChartData() {
     var baseData = [...this.state.chartData4];
-    var result = baseData.concat(this.state.chartData3).concat(this.state.chartData2).concat(this.state.chartData1).concat(this.state.chartData)
+    var result = baseData
+      .concat(this.state.chartData3)
+      .concat(this.state.chartData2)
+      .concat(this.state.chartData1)
+      .concat(this.state.chartData);
     return result;
   }
+  
 }
 function ParseDate(d) {
   var curr_date = d.getDate();
   var curr_month = d.getMonth() + 1; //Months are zero based
   var curr_year = d.getFullYear();
   var result = "";
-  if (curr_date < 9) {
+  if (curr_date < 10) {
     result += "0" + curr_date + "-";
   } else {
     result += curr_date + "-";
   }
-  if (curr_month < 9) {
+  if (curr_month < 10) {
     result += "0" + curr_month + "-";
   } else {
     result += curr_month + "-";
@@ -546,7 +659,7 @@ function Sum(data) {
   }
   return total;
 }
-function onlyUnique(value, index, self) { 
+function onlyUnique(value, index, self) {
   return self.indexOf(value) === index;
 }
 
@@ -556,27 +669,30 @@ function ParseResponseForGraph(result) {
   }
   var data = JSON.parse(result);
 
-  const timeArray = data.map(ele=>ele.Time).filter( onlyUnique );
- 
-  var chartData =[];
+  const timeArray = data.map((ele) => ele.Time).filter(onlyUnique);
 
-  timeArray.forEach(time => {
+  var chartData = [];
 
-    var pi =  data.filter((item) => time == item.Time && item.SentimentScore === 4);
-    var ni =  data.filter((item) => time == item.Time && item.SentimentScore === 0);
-    var gi =  data.filter((item) => time == item.Time && item.SentimentScore === 2);
-    
-    chartData.push(
-      {
-        Time:time.slice(0, -12),
-        Positive:pi[0].ScoreCounts,
-        Negative:ni[0].ScoreCounts,
-        Neutral:gi[0].ScoreCounts,
-      }
+  timeArray.forEach((time) => {
+    var pi = data.filter(
+      (item) => time == item.Time && item.SentimentScore === 4
     );
-  });  
+    var ni = data.filter(
+      (item) => time == item.Time && item.SentimentScore === 0
+    );
+    var gi = data.filter(
+      (item) => time == item.Time && item.SentimentScore === 2
+    );
 
-  return{chartData};
+    chartData.push({
+      Time: time.slice(0, -12),
+      Positive: pi[0].ScoreCounts,
+      Negative: ni[0].ScoreCounts,
+      Neutral: gi[0].ScoreCounts,
+    });
+  });
+
+  return { chartData };
 }
 
 function ParseResponse(result) {

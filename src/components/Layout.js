@@ -16,8 +16,8 @@ export class Layout extends Component {
           <li>Created by: Santosh Karanam</li>
           <li>
             Contact information:{" "}
-            <a href="mailto:santosh.karanam@iiasa.ac.at">
-              santosh.karanam@iiasa.ac.at
+            <a href="mailto:karanam@iiasa.ac.at">
+              karanam@iiasa.ac.at
             </a>
           </li>
           </ul>
