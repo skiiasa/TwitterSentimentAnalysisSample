@@ -2,7 +2,6 @@ This Project website is delopyed here - https://dashboardliftrestriction.z6.web.
 And Blog regarding the project was published here - https://blog.iiasa.ac.at/2020/04/22/lifting-covid-19-restrictions-visualizing-real-time-twitter-sentiments/
 
 
-Code Project
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
 Below you will find some information on how to perform common tasks.<br>
